@@ -26,6 +26,7 @@ class CPenandBrushDlg : public CDialogEx
 private:
 	MyColorListBox m_color_list;
 	COLORREF m_pen_color = RGB(0, 0, 0);
+	COLORREF m_brush_color = RGB(255, 255, 255);
 // 생성입니다.
 public:
 	CPenandBrushDlg(CWnd* pParent = nullptr);	// 표준 생성자입니다.

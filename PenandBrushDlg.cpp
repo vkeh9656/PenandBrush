@@ -46,6 +46,9 @@ BOOL CPenandBrushDlg::OnInitDialog()
 	SetIcon(m_hIcon, TRUE);			// 큰 아이콘을 설정합니다.
 	SetIcon(m_hIcon, FALSE);		// 작은 아이콘을 설정합니다.
 
+	CButton* p = (CButton*)GetDlgItem(IDC_PEN_RADIO);
+	p->SetCheck(1);
+
 	// 표준 20가지 색상 목록
 	COLORREF color_table[20] = {
 		RGB(0,0,0), RGB(0,0,255), RGB(0,255,0), RGB(0,255,255), RGB(255,0,0), RGB(255,0,255),
@@ -92,10 +95,15 @@ void CPenandBrushDlg::OnPaint()
 	{
 		CPen my_pen(PS_SOLID, 5, m_pen_color);
 		CPen* p_old_pen = dc.SelectObject(&my_pen);
+
+		CBrush my_brush(m_brush_color);
+		CBrush* p_old_brush = dc.SelectObject(&my_brush);
 		
 		dc.Rectangle(20, 20, 150, 150);
 		dc.SelectObject(p_old_pen);
+		dc.SelectObject(p_old_brush);
 		my_pen.DeleteObject();
+		my_brush.DeleteObject();
 		// CDialogEx::OnPaint();
 	}
 }
@@ -112,7 +120,9 @@ void CPenandBrushDlg::OnLbnSelchangeColorList()
 	int index = m_color_list.GetCurSel();
 	if (LB_ERR != index)
 	{
-		m_pen_color = m_color_list.GetItemData(index);
+		CButton* p = (CButton*)GetDlgItem(IDC_PEN_RADIO);
+		if (p->GetCheck()) m_pen_color = m_color_list.GetItemData(index);
+		else m_brush_color = m_color_list.GetItemData(index);
 		InvalidateRect(CRect(0, 0, 200, 200));
 	}
 }
