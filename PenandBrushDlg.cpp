@@ -31,6 +31,7 @@ void CPenandBrushDlg::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CPenandBrushDlg, CDialogEx)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
+	ON_LBN_SELCHANGE(IDC_COLOR_LIST, &CPenandBrushDlg::OnLbnSelchangeColorList)
 END_MESSAGE_MAP()
 
 
@@ -45,7 +46,22 @@ BOOL CPenandBrushDlg::OnInitDialog()
 	SetIcon(m_hIcon, TRUE);			// 큰 아이콘을 설정합니다.
 	SetIcon(m_hIcon, FALSE);		// 작은 아이콘을 설정합니다.
 
-	// TODO: 여기에 추가 초기화 작업을 추가합니다.
+	// 표준 20가지 색상 목록
+	COLORREF color_table[20] = {
+		RGB(0,0,0), RGB(0,0,255), RGB(0,255,0), RGB(0,255,255), RGB(255,0,0), RGB(255,0,255),
+		RGB(255,255,0), RGB(255,255,255), RGB(0,0,128), RGB(0,128,0), RGB(0,128,128),
+		RGB(128,0,0), RGB(128,0,128), RGB(128,128,0), RGB(128,128,128), RGB(192,192,192),
+		RGB(192,220,192), RGB(166,202,240), RGB(255,251,240), RGB(160,160,164)
+	};
+
+	m_color_list.SubclassDlgItem(IDC_COLOR_LIST, this);
+	m_color_list.SetColumnWidth(20);
+	m_color_list.SetItemHeight(0, 20);
+	for (int i = 0; i < 20; i++)
+	{
+		m_color_list.InsertString(i, L""); // 문자열을 추가하지 않아도 이 구문을 써줘야 항목이 추가됨.
+		m_color_list.SetItemData(i, color_table[i]);
+	}
 
 	return TRUE;  // 포커스를 컨트롤에 설정하지 않으면 TRUE를 반환합니다.
 }
@@ -56,10 +72,9 @@ BOOL CPenandBrushDlg::OnInitDialog()
 
 void CPenandBrushDlg::OnPaint()
 {
+	CPaintDC dc(this); // 그리기를 위한 디바이스 컨텍스트입니다.
 	if (IsIconic())
 	{
-		CPaintDC dc(this); // 그리기를 위한 디바이스 컨텍스트입니다.
-
 		SendMessage(WM_ICONERASEBKGND, reinterpret_cast<WPARAM>(dc.GetSafeHdc()), 0);
 
 		// 클라이언트 사각형에서 아이콘을 가운데에 맞춥니다.
@@ -75,7 +90,13 @@ void CPenandBrushDlg::OnPaint()
 	}
 	else
 	{
-		CDialogEx::OnPaint();
+		CPen my_pen(PS_SOLID, 5, m_pen_color);
+		CPen* p_old_pen = dc.SelectObject(&my_pen);
+		
+		dc.Rectangle(20, 20, 150, 150);
+		dc.SelectObject(p_old_pen);
+		my_pen.DeleteObject();
+		// CDialogEx::OnPaint();
 	}
 }
 
@@ -86,3 +107,12 @@ HCURSOR CPenandBrushDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
+void CPenandBrushDlg::OnLbnSelchangeColorList()
+{
+	int index = m_color_list.GetCurSel();
+	if (LB_ERR != index)
+	{
+		m_pen_color = m_color_list.GetItemData(index);
+		InvalidateRect(CRect(0, 0, 200, 200));
+	}
+}
